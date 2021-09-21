@@ -1,4 +1,4 @@
-module github.com/nayarsystems/go-chart/v2/v2
+module github.com/nayarsystems/go-chart/v2
 
 go 1.15
 

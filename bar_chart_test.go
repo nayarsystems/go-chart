@@ -43,7 +43,7 @@ func TestBarChartRenderZero(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	err := bc.Render(PNG, buf)
-	testutil.AssertNotNil(t, err)
+	testutil.AssertNil(t, err) // behaviour was changed so graphs with the same values can be rendered (adding 1 to max)
 }
 
 func TestBarChartProps(t *testing.T) {

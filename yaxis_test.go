@@ -23,7 +23,7 @@ func TestYAxisGetTicks(t *testing.T) {
 	}
 	vf := FloatValueFormatter
 	ticks := ya.GetTicks(r, yr, styleDefaults, vf)
-	testutil.AssertLen(t, ticks, 32)
+	testutil.AssertLen(t, ticks, 28)
 }
 
 func TestYAxisGetTicksWithUserDefaults(t *testing.T) {
