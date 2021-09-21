@@ -56,7 +56,7 @@ const (
 	// DefaultMinimumTickHorizontalSpacing is the minimum distance between horizontal ticks.
 	DefaultMinimumTickHorizontalSpacing = 20
 	// DefaultMinimumTickVerticalSpacing is the minimum distance between vertical ticks.
-	DefaultMinimumTickVerticalSpacing = 20
+	DefaultMinimumTickVerticalSpacing = 24
 
 	// DefaultDateFormat is the default date format.
 	DefaultDateFormat = "2006-01-02"

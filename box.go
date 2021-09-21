@@ -28,6 +28,7 @@ type Box struct {
 	Right  int
 	Bottom int
 	IsSet  bool
+	Value  float64
 }
 
 // IsZero returns if the box is set or not.

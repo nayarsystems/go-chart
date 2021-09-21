@@ -128,6 +128,7 @@ func (bc BarChart) Render(rp RendererProvider, w io.Writer) error {
 		canvasBox = bc.getAdjustedCanvasBox(r, canvasBox, yr, yt)
 		yr = bc.setRangeDomains(canvasBox, yr)
 	}
+
 	bc.drawCanvas(r, canvasBox)
 	bc.drawBars(r, canvasBox, yr)
 	bc.drawXAxis(r, canvasBox)
@@ -174,6 +175,16 @@ func (bc BarChart) getRanges() Range {
 		max = math.Max(b.Value, max)
 	}
 
+	if max == min {
+		max += 1
+	}
+	if round := bc.YAxis.Style.RoundMax; round > 0 {
+		max = RoundUp(max, float64(round))
+	}
+	if round := bc.YAxis.Style.RoundMin; round > 0 {
+		min = RoundDown(min, float64(round))
+	}
+
 	yrange.SetMin(min)
 	yrange.SetMax(max)
 
@@ -207,6 +218,7 @@ func (bc BarChart) drawBars(r Renderer, canvasBox Box, yr Range) {
 				Left:   bxl,
 				Right:  bxr,
 				Bottom: canvasBox.Bottom - yr.Translate(bc.BaseValue),
+				Value:  bar.Value,
 			}
 		} else {
 			barBox = Box{
@@ -214,9 +226,9 @@ func (bc BarChart) drawBars(r Renderer, canvasBox Box, yr Range) {
 				Left:   bxl,
 				Right:  bxr,
 				Bottom: canvasBox.Bottom,
+				Value:  bar.Value,
 			}
 		}
-
 		Draw.Box(r, barBox, bar.Style.InheritFrom(bc.styleDefaultsBar(index)))
 
 		xoffset += width + spacing
@@ -267,12 +279,16 @@ func (bc BarChart) drawYAxis(r Renderer, canvasBox Box, yr Range, ticks []Tick) 
 		axisStyle := bc.YAxis.Style.InheritFrom(bc.styleDefaultsAxes())
 		axisStyle.WriteToRenderer(r)
 
-		r.MoveTo(canvasBox.Right, canvasBox.Top)
-		r.LineTo(canvasBox.Right, canvasBox.Bottom)
+		axisPosition := canvasBox.Right
+		if bc.YAxis.Style.YAxisLeftSide {
+			axisPosition = canvasBox.Left
+		}
+		r.MoveTo(axisPosition, canvasBox.Top)
+		r.LineTo(axisPosition, canvasBox.Bottom)
 		r.Stroke()
 
-		r.MoveTo(canvasBox.Right, canvasBox.Bottom)
-		r.LineTo(canvasBox.Right+DefaultHorizontalTickWidth, canvasBox.Bottom)
+		r.MoveTo(axisPosition, canvasBox.Bottom)
+		r.LineTo(axisPosition+DefaultHorizontalTickWidth, canvasBox.Bottom)
 		r.Stroke()
 
 		var ty int
@@ -281,13 +297,24 @@ func (bc BarChart) drawYAxis(r Renderer, canvasBox Box, yr Range, ticks []Tick) 
 			ty = canvasBox.Bottom - yr.Translate(t.Value)
 
 			axisStyle.GetStrokeOptions().WriteToRenderer(r)
-			r.MoveTo(canvasBox.Right, ty)
-			r.LineTo(canvasBox.Right+DefaultHorizontalTickWidth, ty)
-			r.Stroke()
+			r.MoveTo(axisPosition, ty)
+			if bc.YAxis.Style.IntegerValues {
+				t.Label = fmt.Sprintf("%.0f", math.Round(t.Value))
+			}
+			if bc.YAxis.Style.YAxisLeftSide {
+				r.LineTo(axisPosition-DefaultHorizontalTickWidth-5, ty)
+				r.Stroke()
+				axisStyle.GetTextOptions().WriteToRenderer(r)
+				tb = r.MeasureText(t.Label)
+				Draw.Text(r, t.Label, canvasBox.Left-DefaultYAxisMargin-tb.Right-5, ty+(tb.Height()>>1), axisStyle)
+			} else {
+				r.LineTo(axisPosition+DefaultHorizontalTickWidth, ty)
+				r.Stroke()
+				axisStyle.GetTextOptions().WriteToRenderer(r)
+				tb = r.MeasureText(t.Label)
+				Draw.Text(r, t.Label, axisPosition+DefaultYAxisMargin+5, ty+(tb.Height()>>1), axisStyle)
+			}
 
-			axisStyle.GetTextOptions().WriteToRenderer(r)
-			tb = r.MeasureText(t.Label)
-			Draw.Text(r, t.Label, canvasBox.Right+DefaultYAxisMargin+5, ty+(tb.Height()>>1), axisStyle)
 		}
 
 	}
@@ -436,9 +463,14 @@ func (bc BarChart) box() Box {
 	dpr := bc.Background.Padding.GetRight(10)
 	dpb := bc.Background.Padding.GetBottom(50)
 
+	leftPadding := bc.Background.Padding.GetLeft(20)
+	if bc.YAxis.Style.YAxisLeftSide {
+		dpr = bc.Background.Padding.GetRight(0)
+		leftPadding = bc.Background.Padding.GetLeft(100)
+	}
 	return Box{
 		Top:    bc.Background.Padding.GetTop(20),
-		Left:   bc.Background.Padding.GetLeft(20),
+		Left:   leftPadding,
 		Right:  bc.GetWidth() - dpr,
 		Bottom: bc.GetHeight() - dpb,
 	}

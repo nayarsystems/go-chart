@@ -1,6 +1,7 @@
 package chart
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -244,11 +245,47 @@ func (d draw) Box(r Renderer, b Box, s Style) {
 	s.GetFillAndStrokeOptions().WriteToRenderer(r)
 	defer r.ResetStyle()
 
-	r.MoveTo(b.Left, b.Top)
-	r.LineTo(b.Right, b.Top)
-	r.LineTo(b.Right, b.Bottom)
-	r.LineTo(b.Left, b.Bottom)
-	r.LineTo(b.Left, b.Top)
+	rx := (b.Right - b.Left) / 2
+	cy := b.Top + rx/2
+	cx := (b.Left + b.Right) / 2
+	if s.Rounded {
+		if (b.Bottom - b.Top) >= ((b.Right - b.Left) / 4) {
+			r.MoveTo(b.Left, cy)
+			r.ArcTo(cx, cy, float64(rx), float64(-rx/2), 0, math.Pi)
+			r.LineTo(b.Right, cy)
+			r.LineTo(b.Right, b.Bottom)
+			r.LineTo(b.Left, b.Bottom)
+			r.LineTo(b.Left, cy)
+			r.FillStroke()
+		} else {
+			r.MoveTo(b.Left, b.Top)
+			r.LineTo(b.Right, b.Top)
+			r.LineTo(b.Right, b.Bottom)
+			r.LineTo(b.Left, b.Bottom)
+			r.LineTo(b.Left, b.Top)
+			r.FillStroke()
+		}
+
+	} else {
+		r.MoveTo(b.Left, b.Top)
+		r.LineTo(b.Right, b.Top)
+		r.LineTo(b.Right, b.Bottom)
+		r.LineTo(b.Left, b.Bottom)
+		r.LineTo(b.Left, b.Top)
+	}
+
+	if s.ShowBarValue {
+		value := fmt.Sprintf("%.0f", b.Value)
+		font, _ := GetDefaultFont()
+		style := Style{
+			FontColor: ColorBlack,
+			FontSize:  14,
+			Font:      font,
+		}
+		style.WriteTextOptionsToRenderer(r)
+		m := r.MeasureText(value)
+		Draw.Text(r, value, cx-((m.Right-m.Left)/2), cy-20, style)
+	}
 	r.FillStroke()
 }
 

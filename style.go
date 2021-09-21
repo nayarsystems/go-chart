@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/golang/freetype/truetype"
-	"github.com/wcharczuk/go-chart/v2/drawing"
+	"github.com/nayarsystems/go-chart/v2/drawing"
 )
 
 const (
@@ -69,6 +69,13 @@ type Style struct {
 	TextWrap            TextWrap
 	TextLineSpacing     int
 	TextRotationDegrees float64 //0 is unset or normal
+
+	Rounded       bool
+	YAxisLeftSide bool
+	ShowBarValue  bool
+	IntegerValues bool
+	RoundMax      int
+	RoundMin      int
 }
 
 // IsZero returns if the object is set or not.
@@ -405,6 +412,12 @@ func (s Style) InheritFrom(defaults Style) (final Style) {
 	final.TextWrap = s.GetTextWrap(defaults.TextWrap)
 	final.TextLineSpacing = s.GetTextLineSpacing(defaults.TextLineSpacing)
 	final.TextRotationDegrees = s.GetTextRotationDegrees(defaults.TextRotationDegrees)
+	final.Rounded = s.Rounded
+	final.YAxisLeftSide = s.YAxisLeftSide
+	final.ShowBarValue = s.ShowBarValue
+	final.IntegerValues = s.IntegerValues
+	final.RoundMax = s.RoundMax
+	final.RoundMin = s.RoundMin
 
 	return
 }
