@@ -278,8 +278,8 @@ func (d draw) Box(r Renderer, b Box, s Style) {
 		value := fmt.Sprintf("%.0f", b.Value)
 		font, _ := GetDefaultFont()
 		style := Style{
+			FontSize:  s.FontSize,
 			FontColor: ColorBlack,
-			FontSize:  14,
 			Font:      font,
 		}
 		style.WriteTextOptionsToRenderer(r)
